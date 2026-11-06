@@ -1916,6 +1916,12 @@ impl UCommand {
             if let Some(systemroot) = env::var_os("SYSTEMROOT") {
                 cmd_env.push(("SYSTEMROOT".into(), systemroot));
             }
+            // Without %TEMP%, std::env::temp_dir() falls back to the Windows
+            // directory, which only administrators can write to. %TMP% is left
+            // out like $TMPDIR on Unix, since mktemp reads it as an override.
+            if let Some(temp) = env::var_os("TEMP") {
+                cmd_env.push(("TEMP".into(), temp));
+            }
         } else if let Some(ld_preload) = env::var_os("LD_PRELOAD") {
             cmd_env.push(("LD_PRELOAD".into(), ld_preload));
         }
