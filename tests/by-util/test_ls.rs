@@ -4039,6 +4039,22 @@ fn test_ls_success_on_c_drv_root_windows() {
     scene.ucmd().arg("C:\\").succeeds();
 }
 
+#[cfg(windows)]
+#[test]
+// https://github.com/uutils/coreutils/issues/11103
+fn test_ls_non_ascii_name_without_locale_windows() {
+    let scene = TestScenario::new(util_name!());
+    scene.fixtures.touch("fílè₂");
+    // Windows shells usually leave the locale variables unset. An empty
+    // LC_ALL overrides the harness default of "C" in the same way.
+    scene
+        .ucmd()
+        .env("LC_ALL", "")
+        .arg("--quoting-style=shell-escape")
+        .succeeds()
+        .stdout_only("fílè₂\n");
+}
+
 #[test]
 fn test_ls_version_sort() {
     let scene = TestScenario::new(util_name!());
