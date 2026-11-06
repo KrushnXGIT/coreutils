@@ -335,6 +335,22 @@ fn test_directory_with_trailing_backslash() {
     assert!(!at.dir_exists(dir));
 }
 
+#[cfg(windows)]
+#[rstest::rstest]
+#[case::file(&["-f", "dir/file"], "dir/file")]
+#[case::recursive(&["-rf", "dir"], "dir")]
+// https://github.com/uutils/coreutils/issues/5823
+fn test_force_removes_readonly_file(#[case] args: &[&str], #[case] removed: &str) {
+    let (at, mut ucmd) = at_and_ucmd!();
+    at.mkdir("dir");
+    at.touch("dir/file");
+    // Sets FILE_ATTRIBUTE_READONLY, which a plain DeleteFile refuses to remove.
+    at.set_readonly("dir/file");
+
+    ucmd.args(args).succeeds().no_output();
+    assert!(!at.file_exists(removed) && !at.dir_exists(removed));
+}
+
 #[test]
 fn test_verbose() {
     let (at, mut ucmd) = at_and_ucmd!();
