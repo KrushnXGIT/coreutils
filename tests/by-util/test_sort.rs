@@ -4267,6 +4267,7 @@ fn test_debug_incompatible_with_output() {
     let (at, mut ucmd) = at_and_ucmd!();
     ucmd.args(&["-o", "out", "--debug"])
         .pipe_in("b\na\n")
+        .ignore_stdin_write_error()
         .fails_with_code(2)
         .stderr_only("sort: options '-o --debug' are incompatible\n");
     assert!(!at.file_exists("out"));
